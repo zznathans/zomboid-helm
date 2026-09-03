@@ -1,0 +1,121 @@
+# Default values for zomboid-server.
+
+# -- Number of replicas. Project Zomboid does not support clustering/HA,
+# leave this at 1. It exists as a value only so it's visible/documented.
+replicaCount: 1
+
+image:
+  # -- Your custom Project Zomboid server image. Not published anywhere by
+  # default since this chart is image-agnostic -- fill this in once you've
+  # built/pushed your image.
+  repository: ""
+  pullPolicy: IfNotPresent
+  tag: ""
+
+imagePullSecrets: []
+# -- Chart.yaml's name is "zomboid-server-chart" (the "-chart" suffix keeps
+# the published OCI chart artifact from colliding with the server image in
+# GHCR), so this pins the app/label name back to "zomboid-server".
+nameOverride: "zomboid-server"
+fullnameOverride: ""
+
+# -- Deployment update strategy. Recreate is required (not RollingUpdate)
+# because the data volume is ReadWriteOnce and can only be mounted by one
+# pod at a time.
+strategy:
+  type: Recreate
+
+podAnnotations: {}
+podLabels: {}
+
+# -- Pod-level security context. Some PZ images run as root by default;
+# adjust runAsUser/runAsGroup/fsGroup to match your image if it drops
+# privileges.
+podSecurityContext: {}
+  # runAsUser: 1000
+  # runAsGroup: 1000
+  # fsGroup: 1000
+
+# -- Container-level security context.
+securityContext: {}
+  # allowPrivilegeEscalation: false
+
+# -- Non-secret environment variables passed straight through to the
+# container. Adjust keys to match what your image actually expects.
+env:
+  SERVER_NAME: "MyZomboidServer"
+  # SERVER_PASSWORD: ""
+  # MODS: ""
+  # WORKSHOP_ITEMS: ""
+
+# -- Escape hatch for env vars not covered by `env`, using the full
+# Kubernetes env entry syntax (e.g. valueFrom).
+extraEnv: []
+  # - name: SOME_VAR
+  #   value: "some-value"
+
+# -- Sensitive env vars (admin/RCON passwords etc.) sourced from a Secret
+# instead of plaintext values. Set secrets.create=true to have the chart
+# create the Secret from `secrets.data`, or set existingSecret to the name
+# of a Secret you manage yourself with the same keys.
+secrets:
+  create: true
+  # existingSecret: ""
+  # -- Keys become env var names in the container when secrets.create=true.
+  data:
+    ADMIN_PASSWORD: "changeme"
+    RCON_PASSWORD: "changeme"
+
+service:
+  # -- LoadBalancer works out of the box on k3s via its built-in ServiceLB.
+  # Switch to NodePort if you don't have a LoadBalancer implementation.
+  type: LoadBalancer
+  ports:
+    game:
+      enabled: true
+      port: 16261
+      protocol: UDP
+    steam:
+      enabled: true
+      port: 16262
+      protocol: UDP
+    rcon:
+      enabled: true
+      port: 27015
+      protocol: TCP
+
+persistence:
+  # -- Persist Zomboid save/config data across pod restarts.
+  enabled: true
+  # -- Path inside the container where PZ stores its data. Adjust to match
+  # your image (commonly the user's ~/Zomboid directory).
+  mountPath: /data
+  accessMode: ReadWriteOnce
+  size: 10Gi
+  storageClassName: ""
+  # -- Use an existing PVC instead of creating one.
+  existingClaim: ""
+
+# -- Optional server config file(s) to mount into the container, e.g.
+# servertest.ini. Only rendered if this is non-empty. Key = filename,
+# value = file content.
+config: {}
+  # servertest.ini: |
+  #   PVP=false
+  #   Open=true
+
+# -- Where to mount the rendered config files, if `config` is set.
+configMountPath: /config
+
+resources: {}
+  # Project Zomboid is CPU/RAM hungry, especially with mods; size these to
+  # your server population and modlist.
+  # requests:
+  #   cpu: 2000m
+  #   memory: 4Gi
+  # limits:
+  #   memory: 8Gi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

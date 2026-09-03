@@ -1,0 +1,7 @@
+# Helm
+*.tgz
+zomboid-server/charts/
+zomboid-server/Chart.lock
+
+# Local scratch
+*.log

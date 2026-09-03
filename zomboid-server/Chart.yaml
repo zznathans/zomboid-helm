@@ -1,0 +1,9 @@
+apiVersion: v2
+name: zomboid-server-chart
+description: A Helm chart for a self-hosted Project Zomboid dedicated server
+type: application
+version: 0.1.0
+appVersion: "42.20.4"
+keywords:
+  - project-zomboid
+  - game-server

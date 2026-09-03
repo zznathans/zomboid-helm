@@ -1,0 +1,53 @@
+suite: deployment
+templates:
+  - deployment.yaml
+set:
+  image.repository: example/pz
+  image.tag: latest
+tests:
+  - it: renders a single-replica Deployment with Recreate strategy
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.replicas
+          value: 1
+      - equal:
+          path: spec.strategy.type
+          value: Recreate
+
+  - it: mounts the data volume at the configured persistence path
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: data
+            mountPath: /data
+
+  - it: omits the PVC volume reference when persistence is disabled
+    set:
+      persistence.enabled: false
+    asserts:
+      - isNullOrEmpty:
+          path: spec.template.spec.volumes
+
+  - it: sources ADMIN_PASSWORD and RCON_PASSWORD from the generated Secret
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: ADMIN_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: RELEASE-NAME-zomboid-server
+                key: ADMIN_PASSWORD
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: RCON_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: RELEASE-NAME-zomboid-server
+                key: RCON_PASSWORD

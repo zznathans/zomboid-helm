@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "zomboid-server.fullname" . }}
+  labels:
+    {{- include "zomboid-server.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    {{- if .Values.service.ports.game.enabled }}
+    - name: game
+      port: {{ .Values.service.ports.game.port }}
+      targetPort: {{ .Values.service.ports.game.port }}
+      protocol: {{ .Values.service.ports.game.protocol }}
+    {{- end }}
+    {{- if .Values.service.ports.steam.enabled }}
+    - name: steam
+      port: {{ .Values.service.ports.steam.port }}
+      targetPort: {{ .Values.service.ports.steam.port }}
+      protocol: {{ .Values.service.ports.steam.protocol }}
+    {{- end }}
+    {{- if .Values.service.ports.rcon.enabled }}
+    - name: rcon
+      port: {{ .Values.service.ports.rcon.port }}
+      targetPort: {{ .Values.service.ports.rcon.port }}
+      protocol: {{ .Values.service.ports.rcon.protocol }}
+    {{- end }}
+  selector:
+    {{- include "zomboid-server.selectorLabels" . | nindent 4 }}

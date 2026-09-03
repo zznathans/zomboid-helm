@@ -1,0 +1,24 @@
+Project Zomboid server "{{ include "zomboid-server.fullname" . }}" has been deployed.
+
+1. Check pod status:
+   kubectl get pods -l "app.kubernetes.io/instance={{ .Release.Name }}" -n {{ .Release.Namespace }}
+
+2. Find the server's connection address:
+{{- if eq .Values.service.type "LoadBalancer" }}
+   kubectl get svc {{ include "zomboid-server.fullname" . }} -n {{ .Release.Namespace }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+   Connect using that IP and the game port ({{ .Values.service.ports.game.port }}/{{ .Values.service.ports.game.protocol }}).
+{{- else if eq .Values.service.type "NodePort" }}
+   kubectl get svc {{ include "zomboid-server.fullname" . }} -n {{ .Release.Namespace }} -o jsonpath='{.spec.ports[?(@.name=="game")].nodePort}'
+   Connect using any node's IP and the NodePort shown above.
+{{- else }}
+   kubectl get svc {{ include "zomboid-server.fullname" . }} -n {{ .Release.Namespace }}
+{{- end }}
+
+3. RCON is exposed on port {{ .Values.service.ports.rcon.port }}/{{ .Values.service.ports.rcon.protocol }}
+   (only if service.ports.rcon.enabled is true). The RCON password is stored in the
+   "{{ include "zomboid-server.secretName" . }}" Secret under the RCON_PASSWORD key -- change it
+   from the "changeme" default in values.yaml (or your existingSecret) before exposing this
+   service publicly.
+
+4. Save data persists at {{ .Values.persistence.mountPath }} on a PersistentVolumeClaim named
+   "{{ include "zomboid-server.pvcName" . }}"{{ if not .Values.persistence.enabled }} (persistence is currently DISABLED -- data will not survive pod restarts){{ end }}.

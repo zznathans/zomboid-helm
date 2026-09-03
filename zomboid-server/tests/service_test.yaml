@@ -1,0 +1,50 @@
+suite: service
+templates:
+  - service.yaml
+set:
+  image.repository: example/pz
+  image.tag: latest
+tests:
+  - it: exposes the game, steam and RCON ports by default
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: Service
+      - equal:
+          path: spec.type
+          value: LoadBalancer
+      - contains:
+          path: spec.ports
+          content:
+            name: game
+            port: 16261
+            targetPort: 16261
+            protocol: UDP
+      - contains:
+          path: spec.ports
+          content:
+            name: rcon
+            port: 27015
+            targetPort: 27015
+            protocol: TCP
+
+  - it: switches to NodePort when configured
+    set:
+      service.type: NodePort
+    asserts:
+      - equal:
+          path: spec.type
+          value: NodePort
+
+  - it: omits the RCON port when disabled
+    set:
+      service.ports.rcon.enabled: false
+    asserts:
+      - notContains:
+          path: spec.ports
+          content:
+            name: rcon
+            port: 27015
+            targetPort: 27015
+            protocol: TCP
