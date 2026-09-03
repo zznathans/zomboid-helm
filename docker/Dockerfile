@@ -26,8 +26,6 @@ RUN useradd --uid "${PZUID}" --shell /bin/bash --home-dir /data --no-create-home
     mkdir -p "$STEAMCMD_DIR" "$PZSERVER_DIR" /data && \
     chown -R pzuser:pzuser "$STEAMCMD_DIR" "$PZSERVER_DIR" /data
 
-COPY --chown=pzuser:pzuser --chmod=755 entrypoint.sh /opt/entrypoint.sh
-
 USER pzuser
 WORKDIR /opt/pzserver
 
@@ -42,6 +40,11 @@ RUN "$STEAMCMD_DIR/steamcmd.sh" \
       +login anonymous \
       +app_update 380870 validate \
       +quit
+
+# Copied last (after the multi-GB SteamCMD install) so editing the
+# entrypoint doesn't bust the cache on that layer and force a full
+# re-download/validate of the game server.
+COPY --chown=pzuser:pzuser --chmod=755 entrypoint.sh /opt/entrypoint.sh
 
 # Save/config data -- mount a volume here to persist across container
 # restarts and image updates. This is also the container user's $HOME.
