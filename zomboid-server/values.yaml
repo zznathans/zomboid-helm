@@ -5,11 +5,12 @@
 replicaCount: 1
 
 image:
-  # -- Your custom Project Zomboid server image. Not published anywhere by
-  # default since this chart is image-agnostic -- fill this in once you've
-  # built/pushed your image.
-  repository: ""
+  # -- Defaults to the image published by this repo's docker-publish.yml
+  # workflow (ghcr.io/zznathans/zomboid-server). Override if you're using
+  # your own fork/build of the server image.
+  repository: ghcr.io/zznathans/zomboid-server
   pullPolicy: IfNotPresent
+  # -- Defaults to the chart's appVersion if unset.
   tag: ""
 
 imagePullSecrets: []

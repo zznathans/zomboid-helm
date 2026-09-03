@@ -8,8 +8,9 @@ name: Chart Publish
 # to GHCR: `helm install oci://ghcr.io/zznathans/zomboid-server-chart --version X.Y.Z`.
 # The chart is named "zomboid-server-chart" (not "zomboid-server") specifically
 # so this doesn't collide with the server's own image at
-# ghcr.io/zznathans/zomboid-helm - both would otherwise land in the same GHCR
-# repo, tagged with the same release version, each overwriting the other's tag.
+# ghcr.io/zznathans/zomboid-server - both would otherwise land in the same
+# GHCR repo, tagged with the same release version, each overwriting the
+# other's tag.
 #
 # workflow_dispatch is a fallback for re-running a publish whose
 # release:published event never arrived (e.g. an Actions outage) - dispatch
