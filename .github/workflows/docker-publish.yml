@@ -22,6 +22,13 @@ on:
         description: "Release tag to (re-)publish, e.g. 1.9.0"
         required: true
 
+# Keyed by tag, not ref, so a re-dispatch for the same release cancels an
+# in-flight publish of it, but two different releases can still publish
+# concurrently.
+concurrency:
+  group: docker-publish-${{ github.event.release.tag_name || inputs.tag }}
+  cancel-in-progress: true
+
 env:
   REGISTRY: ghcr.io
   # Named after the app (zomboid-server), not the repo (zomboid-helm) -
