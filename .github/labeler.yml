@@ -1,0 +1,17 @@
+docker:
+  - changed-files:
+      - any-glob-to-any-file: "docker/**"
+
+helm:
+  - changed-files:
+      - any-glob-to-any-file: "zomboid-server/**"
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file: ".github/**"
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "**/*.md"
+          - "LICENSE"

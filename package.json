@@ -1,0 +1,9 @@
+{
+  "name": "zomboid-helm",
+  "private": true,
+  "description": "Placeholder for tooling that expects a root package.json (semantic-release plugins) - this repo has no npm dependencies of its own.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zznathans/zomboid-helm.git"
+  }
+}

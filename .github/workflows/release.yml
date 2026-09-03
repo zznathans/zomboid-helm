@@ -1,0 +1,74 @@
+name: Release
+
+# Computes the next version from Conventional Commits on main and creates
+# the matching Git tag + GitHub Release via the API - no version-bump
+# commit, so this never pushes to main and the pull_request-required
+# ruleset never comes into play (tags aren't covered by it anyway).
+#
+# That published Release is what triggers docker-publish.yml (image) and
+# chart-publish.yml (chart, versioned straight from the release tag) - see
+# the README's Releasing section.
+#
+# This job also packages the chart a second time and pushes it straight to
+# the gh-pages branch as a traditional Helm chart repo (index.yaml + .tgz),
+# via @semantic-release/exec's publishCmd calling
+# .github/scripts/publish-gh-pages-chart.sh - an additional install method
+# alongside chart-publish.yml's OCI/GHCR one, not a replacement for it.
+# (Not delegated to @qiwi/semantic-release-gh-pages-plugin: its published npm
+# version can't produce a push URL GitHub actually accepts for a GitHub App
+# token without also breaking @semantic-release/github's own auth in the
+# same run - see the script's own comment for detail.)
+#
+# Requires two repo secrets from a GitHub App installed on this repo (with
+# contents:write, issues:write, pull-requests:write permissions):
+#   APP_ID           - the App's ID
+#   APP_PRIVATE_KEY  - the App's generated private key (PEM)
+# A release created with the default GITHUB_TOKEN never fires other
+# workflows' release:published listeners (GitHub's anti-recursion rule) -
+# which is exactly what docker-publish.yml/chart-publish.yml wait for. See
+# https://github.com/semantic-release/semantic-release/discussions/1906.
+on:
+  push:
+    branches: [main]
+  # Lets a release be re-triggered by hand without needing an empty commit -
+  # useful if a past push's commit(s) lacked a Conventional Commits prefix
+  # and so didn't register with commit-analyzer (it re-scans everything
+  # since the last tag, so a later run still picks those changes up).
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Run semantic-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Generate a token for the release App
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          token: ${{ steps.app-token.outputs.token }}
+
+      - uses: azure/setup-helm@v5
+        with:
+          version: "3.17.0"
+
+      - uses: cycjimmy/semantic-release-action@v6
+        with:
+          semantic_version: 24
+          extra_plugins: |
+            @semantic-release/exec@^6
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
