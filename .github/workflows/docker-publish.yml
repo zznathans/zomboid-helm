@@ -24,7 +24,9 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  # Named after the app (zomboid-server), not the repo (zomboid-helm) -
+  # matches the chart's default image.repository in values.yaml.
+  IMAGE_NAME: ${{ github.repository_owner }}/zomboid-server
 
 jobs:
   build-and-push-image:
