@@ -33,6 +33,12 @@ tests:
       - isNullOrEmpty:
           path: spec.template.spec.volumes
 
+  - it: defaults fsGroup to 1000 so the non-root image can write the data volume
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext.fsGroup
+          value: 1000
+
   - it: sources ADMIN_PASSWORD and RCON_PASSWORD from the generated Secret
     asserts:
       - contains:
