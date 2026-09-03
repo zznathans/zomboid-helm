@@ -32,10 +32,10 @@ podLabels: {}
 # -- Pod-level security context. Some PZ images run as root by default;
 # adjust runAsUser/runAsGroup/fsGroup to match your image if it drops
 # privileges.
-podSecurityContext: {}
+podSecurityContext:
+  fsGroup: 1000
   # runAsUser: 1000
   # runAsGroup: 1000
-  # fsGroup: 1000
 
 # -- Container-level security context.
 securityContext: {}
@@ -70,20 +70,47 @@ secrets:
 service:
   # -- LoadBalancer works out of the box on k3s via its built-in ServiceLB.
   # Switch to NodePort if you don't have a LoadBalancer implementation.
+  #
+  # -- For clusters with no cloud/on-prem LoadBalancer implementation (e.g. a
+  # bare-metal homelab cluster), set type: NodePort and pin a `nodePort` value
+  # per port below so the port stays stable across upgrades/reinstalls. Then
+  # configure your router to forward the real, well-known external port
+  # (e.g. 16261/UDP) to `<node-ip>:<pinned-nodePort>` -- port translation
+  # happens at the router, not in-cluster.
+  #
+  # -- Kubernetes only allows nodePort values inside the cluster's configured
+  # `--service-node-port-range` (default 30000-32767 on most clusters,
+  # including unconfigured RKE-style clusters). Project Zomboid's real ports
+  # (16261, 16262, 27015) fall below that range, so they can't be used
+  # directly as nodePort values unless a cluster admin has expanded the
+  # apiserver's port range (a cluster-level change, out of scope for this
+  # chart). Pick a free port inside the valid range instead (e.g. 31261) and
+  # forward the real port to it at the router.
   type: LoadBalancer
   ports:
     game:
       enabled: true
       port: 16261
       protocol: UDP
+      # -- Optional. Pins the NodePort Kubernetes allocates for this port
+      # (only used when service.type is NodePort, or on a Service where
+      # kube-apiserver still allocates one anyway). Leave empty ("") to let
+      # Kubernetes pick a random port each time (current default behavior).
+      # Must be within the cluster's --service-node-port-range.
+      nodePort: ""
     steam:
       enabled: true
       port: 16262
       protocol: UDP
+      # -- See game.nodePort above.
+      nodePort: ""
     rcon:
       enabled: true
       port: 27015
       protocol: TCP
+      # -- See game.nodePort above. Only relevant if you want remote RCON
+      # access; most users should leave RCON unexposed outside the cluster.
+      nodePort: ""
 
 persistence:
   # -- Persist Zomboid save/config data across pod restarts.

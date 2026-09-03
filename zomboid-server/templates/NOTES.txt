@@ -10,6 +10,18 @@ Project Zomboid server "{{ include "zomboid-server.fullname" . }}" has been depl
 {{- else if eq .Values.service.type "NodePort" }}
    kubectl get svc {{ include "zomboid-server.fullname" . }} -n {{ .Release.Namespace }} -o jsonpath='{.spec.ports[?(@.name=="game")].nodePort}'
    Connect using any node's IP and the NodePort shown above.
+
+   If you're on a cluster with no LoadBalancer implementation (e.g. a
+   bare-metal homelab), pin service.ports.game.nodePort (and steam/rcon as
+   needed) in values.yaml so this NodePort stays stable across upgrades, then
+   configure your router/firewall to forward the real external port
+   (game: {{ .Values.service.ports.game.port }}/{{ .Values.service.ports.game.protocol }},
+   steam: {{ .Values.service.ports.steam.port }}/{{ .Values.service.ports.steam.protocol }}, and
+   optionally rcon: {{ .Values.service.ports.rcon.port }}/{{ .Values.service.ports.rcon.protocol }})
+   on your WAN IP to <node-ip>:<pinned-nodePort> for each. Note that nodePort
+   values must fall within the cluster's --service-node-port-range (commonly
+   30000-32767 by default) -- port translation to the well-known game port
+   happens at the router, not in-cluster.
 {{- else }}
    kubectl get svc {{ include "zomboid-server.fullname" . }} -n {{ .Release.Namespace }}
 {{- end }}
