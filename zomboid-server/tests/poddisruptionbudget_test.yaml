@@ -1,0 +1,38 @@
+suite: poddisruptionbudget
+templates:
+  - poddisruptionbudget.yaml
+set:
+  image.repository: example/pz
+  image.tag: latest
+tests:
+  - it: blocks all voluntary eviction by default
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: PodDisruptionBudget
+      - equal:
+          path: spec.maxUnavailable
+          value: 0
+      - equal:
+          path: spec.selector.matchLabels
+          value:
+            app.kubernetes.io/name: zomboid-server
+            app.kubernetes.io/instance: RELEASE-NAME
+
+  - it: renders nothing when disabled
+    set:
+      podDisruptionBudget.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: prefers minAvailable over maxUnavailable when set
+    set:
+      podDisruptionBudget.minAvailable: 1
+    asserts:
+      - equal:
+          path: spec.minAvailable
+          value: 1
+      - notExists:
+          path: spec.maxUnavailable

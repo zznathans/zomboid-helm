@@ -117,6 +117,17 @@ resources: {}
   # limits:
   #   memory: 8Gi
 
+podDisruptionBudget:
+  # -- Blocks voluntary eviction of the game server pod (node drains,
+  # autoscaler downscale, etc). Since this is a single-replica game
+  # server, any eviction disconnects every player -- leave this on
+  # unless you specifically need to allow node maintenance to proceed.
+  enabled: true
+  # -- Set this OR maxUnavailable, not both. When set, maxUnavailable is
+  # ignored.
+  minAvailable: ""
+  maxUnavailable: 0
+
 nodeSelector: {}
 tolerations: []
 affinity: {}
