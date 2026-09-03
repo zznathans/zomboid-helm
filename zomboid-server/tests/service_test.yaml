@@ -48,3 +48,61 @@ tests:
             port: 27015
             targetPort: 27015
             protocol: TCP
+
+  - it: does not set a nodePort by default
+    asserts:
+      - equal:
+          path: spec.ports[0].name
+          value: game
+      - notExists:
+          path: spec.ports[0].nodePort
+
+  - it: pins the nodePort for the game port when set
+    set:
+      service.type: NodePort
+      service.ports.game.nodePort: 31261
+    asserts:
+      - contains:
+          path: spec.ports
+          content:
+            name: game
+            port: 16261
+            targetPort: 16261
+            protocol: UDP
+            nodePort: 31261
+      - notExists:
+          path: spec.ports[1].nodePort
+      - notExists:
+          path: spec.ports[2].nodePort
+
+  - it: pins nodePorts independently per port
+    set:
+      service.type: NodePort
+      service.ports.game.nodePort: 31261
+      service.ports.steam.nodePort: 31262
+      service.ports.rcon.nodePort: 31951
+    asserts:
+      - contains:
+          path: spec.ports
+          content:
+            name: game
+            port: 16261
+            targetPort: 16261
+            protocol: UDP
+            nodePort: 31261
+      - contains:
+          path: spec.ports
+          content:
+            name: steam
+            port: 16262
+            targetPort: 16262
+            protocol: UDP
+            nodePort: 31262
+      - contains:
+          path: spec.ports
+          content:
+            name: rcon
+            port: 27015
+            targetPort: 27015
+            protocol: TCP
+            nodePort: 31951

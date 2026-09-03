@@ -12,18 +12,27 @@ spec:
       port: {{ .Values.service.ports.game.port }}
       targetPort: {{ .Values.service.ports.game.port }}
       protocol: {{ .Values.service.ports.game.protocol }}
+      {{- if .Values.service.ports.game.nodePort }}
+      nodePort: {{ .Values.service.ports.game.nodePort }}
+      {{- end }}
     {{- end }}
     {{- if .Values.service.ports.steam.enabled }}
     - name: steam
       port: {{ .Values.service.ports.steam.port }}
       targetPort: {{ .Values.service.ports.steam.port }}
       protocol: {{ .Values.service.ports.steam.protocol }}
+      {{- if .Values.service.ports.steam.nodePort }}
+      nodePort: {{ .Values.service.ports.steam.nodePort }}
+      {{- end }}
     {{- end }}
     {{- if .Values.service.ports.rcon.enabled }}
     - name: rcon
       port: {{ .Values.service.ports.rcon.port }}
       targetPort: {{ .Values.service.ports.rcon.port }}
       protocol: {{ .Values.service.ports.rcon.protocol }}
+      {{- if .Values.service.ports.rcon.nodePort }}
+      nodePort: {{ .Values.service.ports.rcon.nodePort }}
+      {{- end }}
     {{- end }}
   selector:
     {{- include "zomboid-server.selectorLabels" . | nindent 4 }}
