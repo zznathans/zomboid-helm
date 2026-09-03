@@ -2,8 +2,21 @@ apiVersion: v1
 entries:
   zomboid-server-chart:
   - apiVersion: v2
+    appVersion: 1.1.0
+    created: "2026-09-03T21:48:12.640668702Z"
+    description: A Helm chart for a self-hosted Project Zomboid dedicated server
+    digest: 9875d3a3ba127ee4c2ffaf2983a46fb79c24de6cd8501883a2b12337dead7313
+    keywords:
+    - project-zomboid
+    - game-server
+    name: zomboid-server-chart
+    type: application
+    urls:
+    - https://zznathans.github.io/zomboid-helm/zomboid-server-chart-1.1.0.tgz
+    version: 1.1.0
+  - apiVersion: v2
     appVersion: 1.0.1
-    created: "2026-09-03T21:40:48.274503126Z"
+    created: "2026-09-03T21:48:12.64023659Z"
     description: A Helm chart for a self-hosted Project Zomboid dedicated server
     digest: eff89ad2b740dd4a10d25c200992ab47d88222edee4f88d5970a34fe5cb64223
     keywords:
@@ -16,7 +29,7 @@ entries:
     version: 1.0.1
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-09-03T21:40:48.274098909Z"
+    created: "2026-09-03T21:48:12.639759301Z"
     description: A Helm chart for a self-hosted Project Zomboid dedicated server
     digest: d65b2f3d61edb426e1aa85719acd4d8fb27e8f7a50185cf018f241de42a34d94
     keywords:
@@ -27,4 +40,4 @@ entries:
     urls:
     - https://zznathans.github.io/zomboid-helm/zomboid-server-chart-1.0.0.tgz
     version: 1.0.0
-generated: "2026-09-03T21:40:48.273183376Z"
+generated: "2026-09-03T21:48:12.638218562Z"
